@@ -6,22 +6,23 @@
 //  Copyright © 2017 Yourtion. All rights reserved.
 //
 
+#include <iostream>
+#include <vector>
+
 #include <dlib/image_processing/frontal_face_detector.h>
 #include <dlib/image_processing/render_face_detections.h>
 #include <dlib/image_processing.h>
 #include <dlib/gui_widgets.h>
 #include <dlib/image_io.h>
-#include <iostream>
-#include<dlib/opencv/cv_image_abstract.h>
-//#include <opencv2/opencv.hpp>
-#include<opencv2/imgproc/imgproc.hpp>
-#include<opencv2/highgui/highgui.hpp>
-#include<vector>
-#include<opencv2/photo.hpp>
+#include <dlib/opencv/cv_image_abstract.h>
+
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/photo.hpp>
+
 using namespace cv;
 using namespace dlib;
 using namespace std;
-
 
 struct correspondens{
   std::vector<int> index;
