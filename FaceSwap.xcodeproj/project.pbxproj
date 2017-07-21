@@ -302,6 +302,7 @@
 		CB73441D1F20BC4200D0810B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = DLIB_NO_GUI_SUPPORT;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/Cellar/opencv3/3.2.0/include,
 					/usr/local/Cellar/dlib/19.4/include,

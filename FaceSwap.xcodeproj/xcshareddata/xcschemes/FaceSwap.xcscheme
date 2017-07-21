@@ -70,6 +70,10 @@
             argument = "0001.png"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "0"
+            isEnabled = "YES">
+         </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>

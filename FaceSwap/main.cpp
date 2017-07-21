@@ -5,20 +5,25 @@
 //  Created by YourtionGuo on 20/07/2017.
 //  Copyright © 2017 Yourtion. All rights reserved.
 //
+//  c++ faceSwap.cpp  -o face -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_photo -lopencv_imgcodecs -ldlib -lopenblas
+//  c++ faceSwap.cpp -O3  -o face -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_photo -lopencv_imgcodecs -ldlib -lopenblas
+//
 
 #include <iostream>
 #include <vector>
 
 #include <dlib/image_processing/frontal_face_detector.h>
-#include <dlib/image_processing/render_face_detections.h>
 #include <dlib/image_processing.h>
-#include <dlib/gui_widgets.h>
 #include <dlib/image_io.h>
 #include <dlib/opencv/cv_image_abstract.h>
-
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/photo.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+#ifdef DEBUG
+  #include <dlib/image_processing/render_face_detections.h>
+  #include <dlib/gui_widgets.h>
+#endif
 
 using namespace cv;
 using namespace dlib;
@@ -47,10 +52,14 @@ void faceLandmarkDetection(dlib::array2d<unsigned char>& img, shape_predictor sp
   DLOG("Number of faces detected: %lu \n", dets.size());
 
   full_object_detection shape = sp(img, dets[0]);
-  //image_window win;
-  //win.clear_overlay();
-  //win.set_image(img);
-  //win.add_overlay(render_face_detections(shape));
+#ifdef DEBUG
+  image_window win;
+  win.clear_overlay();
+  win.set_image(img);
+  win.add_overlay(render_face_detections(shape));
+  win.wait_until_closed();
+#endif
+
   for (int i = 0; i < shape.num_parts(); ++i)
   {
     float x=shape.part(i).x();
@@ -176,7 +185,7 @@ int main(int argc, char** argv)
     cout << "Give some image files as arguments to this program." << endl;
     return 0;
   }
-  if (DEBUG || argc == 4) {
+  if (argc == 4) {
     v = true;
   }
 
@@ -184,7 +193,7 @@ int main(int argc, char** argv)
   dlib::array2d<unsigned char> imgDlib1,imgDlib2;
   dlib::load_image(imgDlib1, argv[1]);
   dlib::load_image(imgDlib2, argv[2]);
-  time_teack(&start, "load_image");
+  if(v) time_teack(&start, "load_image");
 
   Mat imgCV1 = imread(argv[1]);
   Mat imgCV2 = imread(argv[2]);
@@ -224,7 +233,6 @@ int main(int argc, char** argv)
     hull1.push_back(points1[hullIndex[i]]);
     hull2.push_back(points2[hullIndex[i]]);
   }
-
 
   //-----------------------step 4. delaunay triangulation -------------------------------------
   std::vector<correspondens> delaunayTri;
