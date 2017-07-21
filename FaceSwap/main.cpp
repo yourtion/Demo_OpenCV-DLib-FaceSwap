@@ -24,6 +24,12 @@ using namespace cv;
 using namespace dlib;
 using namespace std;
 
+#ifdef DEBUG
+  #define DLOG(fmt, ...) fprintf(stderr, fmt,__VA_ARGS__)
+#else
+  #define DLOG(fmt, ...)
+#endif
+
 struct correspondens{
   std::vector<int> index;
 };
@@ -34,12 +40,11 @@ struct correspondens{
  */
 void faceLandmarkDetection(dlib::array2d<unsigned char>& img, shape_predictor sp, std::vector<Point2f>& landmark)
 {
-  dlib::frontal_face_detector detector = get_frontal_face_detector();
+  frontal_face_detector detector = get_frontal_face_detector();
   //dlib::pyramid_up(img);
 
   std::vector<dlib::rectangle> dets = detector(img);
-  //cout << "Number of faces detected: " << dets.size() << endl;
-
+  DLOG("Number of faces detected: %lu \n", dets.size());
 
   full_object_detection shape = sp(img, dets[0]);
   //image_window win;
@@ -64,12 +69,15 @@ void delaunayTriangulation(const std::vector<Point2f>& hull,std::vector<correspo
 {
 
   cv::Subdiv2D subdiv(rect);
-  for (int it = 0; it < hull.size(); it++)
+  for (int it = 0; it < hull.size(); it++) {
     subdiv.insert(hull[it]);
-  //cout<<"done subdiv add......"<<endl;
+  }
+
+  DLOG("done subdiv add : %lu \n", hull.size());
+
   std::vector<Vec6f> triangleList;
   subdiv.getTriangleList(triangleList);
-  //cout<<"traingleList number is "<<triangleList.size()<<endl;
+  DLOG("traingleList number is %lu \n", triangleList.size());
 
   //std::vector<Point2f> pt;
   //correspondens ind;
@@ -119,8 +127,6 @@ void applyAffineTransform(Mat &warpImage, Mat &src, std::vector<Point2f> &srcTri
 /*
  //morp a triangle in the one image to another image.
  */
-
-
 void warpTriangle(Mat &img1, Mat &img2, std::vector<Point2f> &t1, std::vector<Point2f> &t2)
 {
 
@@ -157,18 +163,28 @@ void warpTriangle(Mat &img1, Mat &img2, std::vector<Point2f> &t1, std::vector<Po
 
 }
 
+void time_teack(int *start, const char *event) {
+  printf("time - %s : %.0f ms\n", event,(clock() - *start) * 1000.0 / CLOCKS_PER_SEC );
+  *start = clock();
+}
+
 int main(int argc, char** argv)
 {
-  if (argc < 3)
-  {
+  int start = clock();
+  bool v = false;
+  if (argc < 3) {
     cout << "Give some image files as arguments to this program." << endl;
     return 0;
+  }
+  if (DEBUG || argc == 4) {
+    v = true;
   }
 
   //----------------- step 1. load the input two images. ----------------------------------
   dlib::array2d<unsigned char> imgDlib1,imgDlib2;
   dlib::load_image(imgDlib1, argv[1]);
   dlib::load_image(imgDlib2, argv[2]);
+  time_teack(&start, "load_image");
 
   Mat imgCV1 = imread(argv[1]);
   Mat imgCV2 = imread(argv[2]);
@@ -177,32 +193,31 @@ int main(int argc, char** argv)
     printf("No image data \n");
     return -1;
   }
-  else
-    cout<<"image readed by opencv"<<endl;
-
-
-
 
   //---------------------- step 2. detect face landmarks -----------------------------------
   shape_predictor sp;
   deserialize("shape_predictor_68_face_landmarks.dat") >> sp;
+  if(v) time_teack(&start, "deserialize");
+
   std::vector<Point2f> points1, points2;
 
   faceLandmarkDetection(imgDlib1,sp,points1);
+  if(v) time_teack(&start, "faceLandmarkDetection1");
   faceLandmarkDetection(imgDlib2,sp,points2);
-
-
+  if(v) time_teack(&start, "faceLandmarkDetection2");
 
   //---------------------step 3. find convex hull -------------------------------------------
   Mat imgCV1Warped = imgCV2.clone();
   imgCV1.convertTo(imgCV1, CV_32F);
   imgCV1Warped.convertTo(imgCV1Warped, CV_32F);
+  if(v) time_teack(&start, "convertWarped");
 
   std::vector<Point2f> hull1;
   std::vector<Point2f> hull2;
   std::vector<int> hullIndex;
 
   cv::convexHull(points2, hullIndex, false, false);
+  if(v) time_teack(&start, "convexHull");
 
   for(int i = 0; i < hullIndex.size(); i++)
   {
@@ -215,6 +230,7 @@ int main(int argc, char** argv)
   std::vector<correspondens> delaunayTri;
   Rect rect(0, 0, imgCV1Warped.cols, imgCV1Warped.rows);
   delaunayTriangulation(hull2,delaunayTri,rect);
+  if(v) time_teack(&start, "delaunayTriangulation");
 
   for(size_t i=0;i<delaunayTri.size();++i)
   {
@@ -228,6 +244,7 @@ int main(int argc, char** argv)
 
     warpTriangle(imgCV1,imgCV1Warped,t1,t2);
   }
+  if(v) time_teack(&start, "warpTriangle");
 
 
   //------------------------step 5. clone seamlessly -----------------------------------------------
@@ -244,6 +261,7 @@ int main(int argc, char** argv)
 
   Mat mask = Mat::zeros(imgCV2.rows,imgCV2.cols,imgCV2.depth());
   fillConvexPoly(mask, &hull8U[0], hull8U.size(), Scalar(255,255,255));
+  if(v) time_teack(&start, "fillConvexPoly");
 
 
   Rect r = boundingRect(hull2);
@@ -252,14 +270,20 @@ int main(int argc, char** argv)
   Mat output;
   imgCV1Warped.convertTo(imgCV1Warped, CV_8UC3);
   seamlessClone(imgCV1Warped,imgCV2,mask,center,output,NORMAL_CLONE);
+  if(v) time_teack(&start, "seamlessClone");
 
   string filename=argv[1];
   filename= filename+argv[2];
   filename= filename +".jpg";
   imwrite(filename,output);
-  //imshow("Face Swapped", output);
-  //waitKey(0);
-  //destroyAllWindows();
+  if(v) time_teack(&start, "imwrite");
+
+
+#ifdef DEBUG
+  imshow("Face Swapped", output);
+  waitKey(0);
+  destroyAllWindows();
+#endif
   
   return 0;
 }

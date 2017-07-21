@@ -16,6 +16,8 @@
 		CB73448C1F20BD7200D0810B /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB73448B1F20BD7200D0810B /* Accelerate.framework */; };
 		CB73448D1F20BFE300D0810B /* shape_predictor_68_face_landmarks.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = CB7344221F20BC7600D0810B /* shape_predictor_68_face_landmarks.dat */; };
 		CB73448F1F20C39400D0810B /* libopencv_imgcodecs.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CB73448E1F20C39400D0810B /* libopencv_imgcodecs.dylib */; };
+		CB7344921F219CCD00D0810B /* 0001.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = CB7344901F219C6700D0810B /* 0001.png */; };
+		CB7344931F219CCD00D0810B /* 0003.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = CB7344911F219C7200D0810B /* 0003.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +27,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				CB7344921F219CCD00D0810B /* 0001.png in CopyFiles */,
+				CB7344931F219CCD00D0810B /* 0003.png in CopyFiles */,
 				CB73448D1F20BFE300D0810B /* shape_predictor_68_face_landmarks.dat in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -42,6 +46,8 @@
 		CB7344881F20BD2D00D0810B /* libdlib.19.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdlib.19.4.0.dylib; path = ../../../../../usr/local/Cellar/dlib/19.4/lib/libdlib.19.4.0.dylib; sourceTree = "<group>"; };
 		CB73448B1F20BD7200D0810B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		CB73448E1F20C39400D0810B /* libopencv_imgcodecs.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgcodecs.dylib; path = ../../../../../usr/local/Cellar/opencv3/3.2.0/lib/libopencv_imgcodecs.dylib; sourceTree = "<group>"; };
+		CB7344901F219C6700D0810B /* 0001.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 0001.png; sourceTree = "<group>"; };
+		CB7344911F219C7200D0810B /* 0003.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 0003.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +111,8 @@
 		CB73441F1F20BC5B00D0810B /* resource */ = {
 			isa = PBXGroup;
 			children = (
+				CB7344901F219C6700D0810B /* 0001.png */,
+				CB7344911F219C7200D0810B /* 0003.png */,
 				CB7344221F20BC7600D0810B /* shape_predictor_68_face_landmarks.dat */,
 			);
 			name = resource;
@@ -284,6 +292,10 @@
 					/usr/local/Cellar/dlib/19.4/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Wno-shorten-64-to-32",
+					"-Wno-documentation",
+				);
 			};
 			name = Debug;
 		};
@@ -300,6 +312,10 @@
 					/usr/local/Cellar/dlib/19.4/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Wno-shorten-64-to-32",
+					"-Wno-documentation",
+				);
 			};
 			name = Release;
 		};
