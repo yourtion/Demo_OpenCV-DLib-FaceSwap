@@ -30,7 +30,7 @@ using namespace dlib;
 using namespace std;
 
 #ifdef DEBUG
-  #define DLOG(fmt, ...) fprintf(stderr, fmt,__VA_ARGS__)
+  #define DLOG(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
 #else
   #define DLOG(fmt, ...)
 #endif
@@ -46,27 +46,18 @@ struct correspondens{
 void faceLandmarkDetection(dlib::array2d<unsigned char>& img, shape_predictor sp, std::vector<Point2f>& landmark)
 {
   frontal_face_detector detector = get_frontal_face_detector();
-  //dlib::pyramid_up(img);
+//  dlib::pyramid_up(img);
 
   std::vector<dlib::rectangle> dets = detector(img);
   DLOG("Number of faces detected: %lu \n", dets.size());
 
   full_object_detection shape = sp(img, dets[0]);
-#ifdef DEBUG
-  image_window win;
-  win.clear_overlay();
-  win.set_image(img);
-  win.add_overlay(render_face_detections(shape));
-  win.wait_until_closed();
-#endif
 
-  for (int i = 0; i < shape.num_parts(); ++i)
-  {
+  for (int i = 0; i < shape.num_parts(); ++i) {
     float x=shape.part(i).x();
     float y=shape.part(i).y();
     landmark.push_back(Point2f(x,y));
   }
-
 }
 
 
@@ -74,7 +65,7 @@ void faceLandmarkDetection(dlib::array2d<unsigned char>& img, shape_predictor sp
  //perform Delaunay Triangulation on the keypoints of the convex hull.
  */
 
-void delaunayTriangulation(const std::vector<Point2f>& hull,std::vector<correspondens>& delaunayTri,Rect rect)
+void delaunayTriangulation(const std::vector<Point2f>& hull, std::vector<correspondens>& delaunayTri, Rect rect)
 {
 
   cv::Subdiv2D subdiv(rect);
@@ -107,7 +98,7 @@ void delaunayTriangulation(const std::vector<Point2f>& hull,std::vector<correspo
       int count = 0;
       for (int j = 0; j < 3; ++j)
         for (size_t k = 0; k < hull.size(); k++)
-          if (abs(pt[j].x - hull[k].x) < 1.0   &&  abs(pt[j].y - hull[k].y) < 1.0)
+          if (abs(pt[j].x - hull[k].x) < 1.0 && abs(pt[j].y - hull[k].y) < 1.0)
           {
             ind.index.push_back(k);
             count++;
@@ -148,9 +139,9 @@ void warpTriangle(Mat &img1, Mat &img2, std::vector<Point2f> &t1, std::vector<Po
   for(int i = 0; i < 3; i++)
   {
 
-    t1Rect.push_back( Point2f( t1[i].x - r1.x, t1[i].y -  r1.y) );
+    t1Rect.push_back( Point2f( t1[i].x - r1.x, t1[i].y - r1.y) );
     t2Rect.push_back( Point2f( t2[i].x - r2.x, t2[i].y - r2.y) );
-    t2RectInt.push_back( Point(t2[i].x - r2.x, t2[i].y - r2.y) ); // for fillConvexPoly
+    t2RectInt.push_back( Point( t2[i].x - r2.x, t2[i].y - r2.y) ); // for fillConvexPoly
 
   }
 
@@ -175,6 +166,14 @@ void warpTriangle(Mat &img1, Mat &img2, std::vector<Point2f> &t1, std::vector<Po
 void time_teack(int *start, const char *event) {
   printf("time - %s : %.0f ms\n", event,(clock() - *start) * 1000.0 / CLOCKS_PER_SEC );
   *start = clock();
+}
+
+void draw_face(const char *name, Mat image, std::vector<Point2f> points) {
+  Mat imageClone = image.clone();
+  for (int i = 0; i< points.size(); i++) {
+    circle(imageClone, Point(points[i].x, points[i].y), 1, Scalar(0, 0, 0));
+  }
+  imshow(name, imageClone);
 }
 
 int main(int argc, char** argv)
@@ -210,10 +209,19 @@ int main(int argc, char** argv)
 
   std::vector<Point2f> points1, points2;
 
-  faceLandmarkDetection(imgDlib1,sp,points1);
+  faceLandmarkDetection(imgDlib1, sp, points1);
   if(v) time_teack(&start, "faceLandmarkDetection1");
-  faceLandmarkDetection(imgDlib2,sp,points2);
+#ifdef DEBUG
+  draw_face("Face 1" ,imgCV1, points1);
+  if(v) time_teack(&start, "circle1");
+#endif
+
+  faceLandmarkDetection(imgDlib2, sp, points2);
   if(v) time_teack(&start, "faceLandmarkDetection2");
+#ifdef DEBUG
+  draw_face("Face 2", imgCV2, points2);
+  if(v) time_teack(&start, "circle1");
+#endif
 
   //---------------------step 3. find convex hull -------------------------------------------
   Mat imgCV1Warped = imgCV2.clone();
@@ -237,20 +245,20 @@ int main(int argc, char** argv)
   //-----------------------step 4. delaunay triangulation -------------------------------------
   std::vector<correspondens> delaunayTri;
   Rect rect(0, 0, imgCV1Warped.cols, imgCV1Warped.rows);
-  delaunayTriangulation(hull2,delaunayTri,rect);
+  delaunayTriangulation(hull2, delaunayTri, rect);
   if(v) time_teack(&start, "delaunayTriangulation");
 
-  for(size_t i=0;i<delaunayTri.size();++i)
+  for(size_t i=0; i < delaunayTri.size(); ++i)
   {
     std::vector<Point2f> t1,t2;
-    correspondens corpd=delaunayTri[i];
-    for(size_t j=0;j<3;++j)
+    correspondens corpd = delaunayTri[i];
+    for(size_t j=0; j < 3; ++j)
     {
       t1.push_back(hull1[corpd.index[j]]);
       t2.push_back(hull2[corpd.index[j]]);
     }
 
-    warpTriangle(imgCV1,imgCV1Warped,t1,t2);
+    warpTriangle(imgCV1, imgCV1Warped, t1, t2);
   }
   if(v) time_teack(&start, "warpTriangle");
 
@@ -260,30 +268,33 @@ int main(int argc, char** argv)
   //calculate mask
   std::vector<Point> hull8U;
 
-  for(int i=0; i< hull2.size();++i)
+  for(int i=0; i < hull2.size();++i)
   {
-    Point pt(hull2[i].x,hull2[i].y);
+    Point pt(hull2[i].x, hull2[i].y);
     hull8U.push_back(pt);
   }
 
 
-  Mat mask = Mat::zeros(imgCV2.rows,imgCV2.cols,imgCV2.depth());
+  Mat mask = Mat::zeros(imgCV2.rows, imgCV2.cols, imgCV2.depth());
   fillConvexPoly(mask, &hull8U[0], hull8U.size(), Scalar(255,255,255));
   if(v) time_teack(&start, "fillConvexPoly");
 
-
   Rect r = boundingRect(hull2);
-  Point center = (r.tl() +r.br()) / 2;
+  Point center = (r.tl() + r.br()) / 2;
 
   Mat output;
   imgCV1Warped.convertTo(imgCV1Warped, CV_8UC3);
-  seamlessClone(imgCV1Warped,imgCV2,mask,center,output,NORMAL_CLONE);
+#ifdef DEBUG
+  imshow("imgCV1Warped", imgCV1Warped);
+  if(v) time_teack(&start, "imgCV1Warped");
+#endif
+  seamlessClone(imgCV1Warped, imgCV2, mask, center, output, NORMAL_CLONE);
   if(v) time_teack(&start, "seamlessClone");
 
-  string filename=argv[1];
-  filename= filename+argv[2];
-  filename= filename +".jpg";
-  imwrite(filename,output);
+  string filename = argv[1];
+  filename = filename + argv[2];
+  filename = filename + ".jpg";
+  imwrite(filename, output);
   if(v) time_teack(&start, "imwrite");
 
 
