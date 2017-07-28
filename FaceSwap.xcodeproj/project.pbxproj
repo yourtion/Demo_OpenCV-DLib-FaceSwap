@@ -283,13 +283,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				HEADER_SEARCH_PATHS = (
-					/usr/local/Cellar/opencv3/3.2.0/include,
-					/usr/local/Cellar/dlib/19.4/include,
+					/usr/local/opt/opencv3/include,
+					/usr/local/opt/dlib/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/opencv3/3.2.0/lib,
-					/usr/local/Cellar/dlib/19.4/lib,
+					/usr/local/opt/opencv3/lib,
+					/usr/local/opt/dlib/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = (
@@ -304,13 +304,13 @@
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = DLIB_NO_GUI_SUPPORT;
 				HEADER_SEARCH_PATHS = (
-					/usr/local/Cellar/opencv3/3.2.0/include,
-					/usr/local/Cellar/dlib/19.4/include,
+					/usr/local/opt/opencv3/include,
+					/usr/local/opt/dlib/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/opencv3/3.2.0/lib,
-					/usr/local/Cellar/dlib/19.4/lib,
+					/usr/local/opt/opencv3/lib,
+					/usr/local/opt/dlib/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = (
