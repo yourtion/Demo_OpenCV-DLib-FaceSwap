@@ -291,10 +291,35 @@ int main(int argc, char** argv)
   seamlessClone(imgCV1Warped, imgCV2, mask, center, output, NORMAL_CLONE);
   if(v) time_teack(&start, "seamlessClone");
 
+  Mat dst;
+
+  int value1 = 3, value2 = 1;     //磨皮程度与细节程度的确定
+
+  int dx = value1 * 5;    //双边滤波参数之一
+  double fc = value1*12.5; //双边滤波参数之一
+  int p = 50; //透明度
+  Mat temp1, temp2, temp3, temp4;
+
+  //双边滤波
+  bilateralFilter(output, temp1, dx, fc, fc);
+
+  temp2 = (temp1 - output + 128);
+
+  //高斯模糊
+  GaussianBlur(temp2, temp3, Size(2 * value2 - 1, 2 * value2 - 1), 0, 0);
+
+  temp4 = output + 2 * temp3 - 255;
+
+  dst = (output*(100 - p) + temp4*p) / 100;
+#ifdef DEBUG
+  imshow("res", dst);
+  if(v) time_teack(&start, "beauty");
+#endif
+
   string filename = argv[1];
   filename = filename + argv[2];
   filename = filename + ".jpg";
-  imwrite(filename, output);
+  imwrite(filename, dst);
   if(v) time_teack(&start, "imwrite");
 
 
