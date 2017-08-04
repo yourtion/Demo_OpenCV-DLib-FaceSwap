@@ -41,7 +41,8 @@ struct correspondens{
 
 
 /*
- //detect 68 face landmarks on the input image by using the face landmark detector in dlib.
+ * 人脸关键点检测
+ * detect 68 face landmarks on the input image by using the face landmark detector in dlib.
  */
 void faceLandmarkDetection(dlib::array2d<unsigned char>& img, shape_predictor sp, std::vector<Point2f>& landmark)
 {
@@ -231,11 +232,12 @@ int main(int argc, char** argv)
 
   std::vector<Point2f> hull1;
   std::vector<Point2f> hull2;
-  std::vector<int> hullIndex;
+  std::vector<int> hullIndex; //保存组成凸包的关键点的下标索引。
 
-  cv::convexHull(points2, hullIndex, false, false);
+  cv::convexHull(points2, hullIndex, false, false); //计算凸包
   if(v) time_teack(&start, "convexHull");
 
+  //保存组成凸包的关键点
   for(int i = 0; i < hullIndex.size(); i++)
   {
     hull1.push_back(points1[hullIndex[i]]);
@@ -243,6 +245,7 @@ int main(int argc, char** argv)
   }
 
   //-----------------------step 4. delaunay triangulation -------------------------------------
+  // Delaunay 三角剖份 和 仿射变换
   std::vector<correspondens> delaunayTri;
   Rect rect(0, 0, imgCV1Warped.cols, imgCV1Warped.rows);
   delaunayTriangulation(hull2, delaunayTri, rect);
@@ -250,7 +253,7 @@ int main(int argc, char** argv)
 
   for(size_t i=0; i < delaunayTri.size(); ++i)
   {
-    std::vector<Point2f> t1,t2;
+    std::vector<Point2f> t1,t2; //存放三角形的顶点
     correspondens corpd = delaunayTri[i];
     for(size_t j=0; j < 3; ++j)
     {
@@ -258,13 +261,13 @@ int main(int argc, char** argv)
       t2.push_back(hull2[corpd.index[j]]);
     }
 
-    warpTriangle(imgCV1, imgCV1Warped, t1, t2);
+    warpTriangle(imgCV1, imgCV1Warped, t1, t2); //进行仿射变换
   }
   if(v) time_teack(&start, "warpTriangle");
 
 
   //------------------------step 5. clone seamlessly -----------------------------------------------
-
+  // 无缝融合
   //calculate mask
   std::vector<Point> hull8U;
 
@@ -291,9 +294,11 @@ int main(int argc, char** argv)
   seamlessClone(imgCV1Warped, imgCV2, mask, center, output, NORMAL_CLONE);
   if(v) time_teack(&start, "seamlessClone");
 
+
+  //------------------------step 6. beauty -----------------------------------------------
   Mat dst;
 
-  int value1 = 3, value2 = 1;     //磨皮程度与细节程度的确定
+  int value1 = 3, value2 = 1; //磨皮程度与细节程度的确定
 
   int dx = value1 * 5;    //双边滤波参数之一
   double fc = value1*12.5; //双边滤波参数之一
@@ -311,10 +316,7 @@ int main(int argc, char** argv)
   temp4 = output + 2 * temp3 - 255;
 
   dst = (output*(100 - p) + temp4*p) / 100;
-#ifdef DEBUG
-  imshow("res", dst);
   if(v) time_teack(&start, "beauty");
-#endif
 
   string filename = argv[1];
   filename = filename + argv[2];
@@ -322,8 +324,8 @@ int main(int argc, char** argv)
   imwrite(filename, dst);
   if(v) time_teack(&start, "imwrite");
 
-
 #ifdef DEBUG
+  imshow("Beauty", dst);
   imshow("Face Swapped", output);
   waitKey(0);
   destroyAllWindows();
